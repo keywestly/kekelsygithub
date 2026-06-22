@@ -1,0 +1,22 @@
+﻿name: 📊 Morning Report
+
+on:
+  schedule:
+    # 00:00 UTC = 08:00 Beijing, Mon-Fri
+    - cron: '0 0 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run morning report
+        run: node scripts/generate-report.mjs
+        env:
+          SCT_KEY: ${{ secrets.SCT_KEY }}
