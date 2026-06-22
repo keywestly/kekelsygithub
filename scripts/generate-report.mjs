@@ -1,6 +1,6 @@
 // generate-report.mjs - US stock morning report auto-script (CI version)
 // Requires SCT_KEY env var for ServerChan push
-import { fetchAll } from '../outputs/daily-fetcher.mjs';
+import { fetchAll } from './daily-fetcher.mjs';
 
 function arr(n) { if(isNaN(n)) return '\u25b8'; return n > 0 ? '\u25b2' : n < 0 ? '\u25bc' : '\u25b8'; }
 function pct(v) { if(v == null) return '\u2014'; const n = parseFloat(v); if(isNaN(n)) return v; return arr(n) + ' ' + Math.abs(n).toFixed(2) + '%'; }

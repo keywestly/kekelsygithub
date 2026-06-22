@@ -1,4 +1,4 @@
-﻿node_modules/
+node_modules/
 .env
-outputs/
+outputs/morning_report.md
 *.log
