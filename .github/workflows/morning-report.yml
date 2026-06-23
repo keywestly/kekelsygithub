@@ -5,6 +5,8 @@ on:
     # 00:00 UTC = 08:00 Beijing, Mon-Fri
     - cron: '0 0 * * 1-5'
   workflow_dispatch:
+  repository_dispatch:
+    types: [morning-report]
 
 jobs:
   generate-report:
