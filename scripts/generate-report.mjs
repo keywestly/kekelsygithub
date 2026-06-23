@@ -34,7 +34,7 @@ function gen(d) {
   if(smh && parseFloat(smh) > 3) dr.push('\u534A\u5BFC\u4F53\u677F\u5757\u9886\u6DA8\u5927\u76D8');
   const iw = d.indices.IWM?.pct;
   if(iw && parseFloat(iw) > 1) dr.push('\u5C0F\u76D8\u80A1\u8D44\u91D1\u6D41\u5165\u660E\u663E');
-  const oil = d.macro.CL1?.pctChange;
+  const oil = d.macro._CL_1?.pctChange;
   if(oil && parseFloat(oil) < -1) dr.push('\u6CB9\u4EF7\u4E0B\u8DCC\u63A8\u52A8\u98CE\u9669\u504F\u597D\u56DE\u5347');
   pu('\n**\u9A71\u52A8\u56E0\u7D20\u5206\u6790\uFF1A** ' + (dr.join('\uFF0C') || '\u5E02\u573A\u8868\u73B0\u5206\u5316') + '\n');
 
@@ -71,7 +71,7 @@ function gen(d) {
   pu('### [4] \u5B8F\u89C2\u53D8\u91CF\n');
   pu('| \u6307\u6807 | \u6570\u503C | \u53D8\u5316 |');
   pu('|---|---|---|');
-  const macros = {VIX:'VIX\u6050\u614C\u6307\u6570',US10Y:'10Y\u7F8E\u503A\u6536\u76CA\u7387',US2Y:'2Y\u7F8E\u503A\u6536\u76CA\u7387','EUR=':'\u6B27\u5143/\u7F8E\u5143',GC1:'\u9EC4\u91D1',CL1:'WTI\u539F\u6CB9',DX:'\u7F8E\u5143\u6307\u6570DXY'};
+  const macros = {VIX:'VIX\u6050\u614C\u6307\u6570',US10Y:'10Y\u7F8E\u503A\u6536\u76CA\u7387',US2Y:'2Y\u7F8E\u503A\u6536\u76CA\u7387','EUR=':'\u6B27\u5143/\u7F8E\u5143',_GC_1:'\u9EC4\u91D1',_CL_1:'WTI\u539F\u6CB9',_DX_1:'\u7F8E\u5143\u6307\u6570DXY'};
   Object.keys(macros).forEach(function(m) {
     const q = d.macro[m], lbl = macros[m];
     if(q) {
@@ -85,13 +85,13 @@ function gen(d) {
   if(u10) { const c = parseFloat(String(u10.change).replace(/%/,'')); if(!isNaN(c)) mp.push('10Y\u6536\u76CA\u7387' + (c>0?'\u4E0A\u884C':'\u4E0B\u884C') + Math.abs(c*100).toFixed(0) + 'bp\u81F3' + u10.last); }
   const vix = d.macro.VIX;
   if(vix) { const vx = parseFloat(vix.last); if(!isNaN(vx)) mp.push(vx < 18 ? 'VIX\u4F4E\u4F4D\uFF0C\u5E02\u573A\u60C5\u7EEA\u4E50\u89C2' : 'VIX\u4E2D\u6027\u504F\u5BA1\u614E'); }
-  const gold = d.macro.GC1?.pctChange;
+  const gold = d.macro._GC_1?.pctChange;
   if(gold && parseFloat(gold) < -0.5) mp.push('\u9EC4\u91D1\u4E0B\u8DCC' + Math.abs(parseFloat(gold)).toFixed(1) + '%\uff0C\u5730\u7F18\u98CE\u9669\u6EA2\u4EF7\u51CF\u5F31');
   else if(gold && parseFloat(gold) > 0.5) mp.push('\u9EC4\u91D1\u4E0A\u6DA8' + parseFloat(gold).toFixed(1) + '%\uff0C\u907F\u9669\u9700\u6C42\u4E0A\u5347');
-  const wti = d.macro.CL1?.pctChange;
+  const wti = d.macro._CL_1?.pctChange;
   if(wti && parseFloat(wti) < -0.5) mp.push('WTI\u539F\u6CB9\u4E0B\u8DCC' + Math.abs(parseFloat(wti)).toFixed(1) + '%\uff0C\u7F8E\u4F0A\u534F\u8BAE\u8FDB\u5C55\u538B\u4F4E\u80FD\u6E90\u4EF7\u683C');
   else if(wti && parseFloat(wti) > 0.5) mp.push('WTI\u539F\u6CB9\u4E0A\u6DA8' + parseFloat(wti).toFixed(1) + '%');
-  const dxy = d.macro.DX;
+  const dxy = d.macro._DX_1;
   if(dxy) mp.push('\u7F8E\u5143\u6307\u6570' + dxy.last + '\uFF0C\u5F31\u52BF\u7F8E\u5143\u683C\u5C40\u7EE7\u7EED');
   pu('\n**\u5206\u6790\uFF1A** ' + (mp.join('\uFF0C') || '\u5B8F\u89C2\u73AF\u5883\u5E73\u7A33') + '\n');
 
