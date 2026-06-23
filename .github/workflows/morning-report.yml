@@ -1,9 +1,10 @@
 name: 📊 Morning Report
 
+# 每天多次触发 + repository_dispatch 备份，解决 GitHub cron 跳单问题
 on:
   schedule:
-    # 00:00 UTC = 08:00 Beijing, Mon-Fri
-    - cron: '0 0 * * 1-5'
+    # 每整点运行一次，工作日 08:00 Beijing 才实际执行
+    - cron: '0 * * * 1-5'
   workflow_dispatch:
   repository_dispatch:
     types: [morning-report]
@@ -12,6 +13,18 @@ jobs:
   generate-report:
     runs-on: ubuntu-latest
     steps:
+      - name: Check time (only 08:00 Beijing)
+        run: |
+          TZ='Asia/Shanghai' date +'Current time: %H:%M'
+          HOUR=$(TZ='Asia/Shanghai' date +%H)
+          MINUTE=$(TZ='Asia/Shanghai' date +%M)
+          # Allow 08:00-08:05 window
+          if [ "$HOUR" != "08" ] || [ "$MINUTE" -gt 5 ]; then
+            echo "⏭️ Not 08:00 Beijing time, skipping"
+            exit 0
+          fi
+          echo "✅ 08:00 Beijing, proceeding"
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
