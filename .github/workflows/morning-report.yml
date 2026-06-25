@@ -1,9 +1,8 @@
-name: 📊 Morning Report
+﻿name: 美股 Morning Report
 
-# 每天多次触发 + repository_dispatch 备份，解决 GitHub cron 跳单问题
 on:
   schedule:
-    # 每整点运行一次，工作日 08:00 Beijing 才实际执行
+    # 每小时触发一次，通过步骤条件过滤（解决 GitHub cron 跳单问题）
     - cron: '0 * * * 1-5'
   workflow_dispatch:
   repository_dispatch:
@@ -14,24 +13,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check time (only 08:00 Beijing)
+        id: check_time
         run: |
-          TZ='Asia/Shanghai' date +'Current time: %H:%M'
           HOUR=$(TZ='Asia/Shanghai' date +%H)
           MINUTE=$(TZ='Asia/Shanghai' date +%M)
-          # Allow 08:00-08:05 window
+          echo "Beijing time: $HOUR:$MINUTE"
           if [ "$HOUR" != "08" ] || [ "$MINUTE" -gt 5 ]; then
-            echo "⏭️ Not 08:00 Beijing time, skipping"
-            exit 0
+            echo "Skipping - not 08:00 Beijing"
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Proceeding at 08:00 Beijing"
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
           fi
-          echo "✅ 08:00 Beijing, proceeding"
 
       - uses: actions/checkout@v4
+        if: steps.check_time.outputs.should_run == 'true'
 
       - uses: actions/setup-node@v4
+        if: steps.check_time.outputs.should_run == 'true'
         with:
           node-version: '22'
 
       - name: Run morning report
+        if: steps.check_time.outputs.should_run == 'true'
         run: node scripts/generate-report.mjs
         env:
           SCT_KEY: ${{ secrets.SCT_KEY }}
+
+      - name: Skipped notification
+        if: steps.check_time.outputs.should_run != 'true'
+        run: echo "Skipped - triggered at $(TZ='Asia/Shanghai' date '+%H:%M') Beijing time"
