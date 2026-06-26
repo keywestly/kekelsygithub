@@ -11,8 +11,8 @@ const TO = 8000;
 async function fetchJson(s) {
   const r = await fetch(CNBC_QUOTE + s, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(TO) });
   const j = await r.json();
-  const q = j.FormattedQuoteResult.FormattedQuote[0];
-  if (q.code) return null;
+  const q = j?.FormattedQuoteResult?.FormattedQuote?.[0];
+  if (!q || q.code) return null;
   return { last: q.last, change: q.change, name: q.name };
 }
 function pct(q) {
@@ -23,6 +23,8 @@ function pct(q) {
   return prev ? ((chgNum / prev) * 100).toFixed(2) : null;
 }
 async function scrapeFuture(u, label) {
+  try {
+
   const r = await fetch('https://www.cnbc.com/quotes/' + u, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(TO) });
   const h = await r.text();
   const g = (f) => { const m = h.match(new RegExp('"' + f + '"\\s*:\\s*"([^"]+)"')); return m ? m[1] : null; };
@@ -31,6 +33,7 @@ async function scrapeFuture(u, label) {
   const chgNum = chg ? parseFloat(chg.replace(/,/g, '')) : NaN;
   const prev = (lastNum && chgNum) ? lastNum - chgNum : null;
   return { name: label, last, change: chg, pctChange: prev ? ((chgNum / prev) * 100).toFixed(2) : null };
+  } catch (e) { return null; }
 }
 async function fetchNews() {
   try {

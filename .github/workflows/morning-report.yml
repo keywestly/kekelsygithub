@@ -1,8 +1,7 @@
-﻿name: 美股 Morning Report
+name: 美股 Morning Report
 
 on:
   schedule:
-    # 每小时触发一次，通过步骤条件过滤（解决 GitHub cron 跳单问题）
     - cron: '0 * * * 1-5'
   workflow_dispatch:
   repository_dispatch:
@@ -12,18 +11,19 @@ jobs:
   generate-report:
     runs-on: ubuntu-latest
     steps:
-      - name: Check time (only 08:00 Beijing)
+      - name: Check time (08:00 Beijing +/- tolerance)
         id: check_time
         run: |
           HOUR=$(TZ='Asia/Shanghai' date +%H)
-          MINUTE=$(TZ='Asia/Shanghai' date +%M)
-          echo "Beijing time: $HOUR:$MINUTE"
-          if [ "$HOUR" != "08" ] || [ "$MINUTE" -gt 5 ]; then
-            echo "Skipping - not 08:00 Beijing"
-            echo "should_run=false" >> "$GITHUB_OUTPUT"
-          else
+          echo "Beijing time: $(TZ='Asia/Shanghai' date '+%H:%M')"
+          # GitHub Actions free-tier cron can be delayed 10-40 min
+          # Accept any trigger within 08:xx hour (cron trigger is once/hour)
+          if [ "$HOUR" = "08" ]; then
             echo "Proceeding at 08:00 Beijing"
             echo "should_run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Skipping - HOUR=$HOUR, not 08:00 Beijing"
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
           fi
 
       - uses: actions/checkout@v4
