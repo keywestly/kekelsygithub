@@ -2,7 +2,7 @@
 
 on:
   schedule:
-    - cron: '0 * * * 1-6'
+    - cron: '0 * * * 2-6'
   workflow_dispatch:
   repository_dispatch:
     types: [morning-report]
