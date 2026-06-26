@@ -220,6 +220,17 @@ async function gen(d) {
        "\u822a\u9526\u79d1\u6280\u66f4\u591a\u53d7\u519b\u5de5/\u5316\u5de5\u5468\u671f\u5f71\u54cd\uff0c\u4e0e\u7f8e\u80a1\u534a\u5bfc\u4f53\u8054\u52a8\u6027\u4e0d\u5927" });
   positions.forEach(function(p) { L.push("- **" + p.n + "**\uFF1A**" + p.i + "**\u2014" + p.t); });
   L.push("");
+
+  var goldPctStr = gold?.pctChange ? parseFloat(gold.pctChange) : 0;
+  var goldPctV = typeof goldPctStr === "number" ? goldPctStr : 0;
+  var hkAct = goldPctV < -0.5 ? "加仓" : goldPctV < 0 ? "持有" : goldPctV < 0.5 ? "减仓" : "离场";
+  var hkConf = Math.abs(goldPctV) > 1 ? 4 : Math.abs(goldPctV) > 0.5 ? 3 : Math.abs(goldPctV) > 0.2 ? 2 : 1;
+  L.push("");
+  L.push("**黄金/DXY/美债专题：**");
+  L.push("- **黄金：**" + pct(String(goldPctV)) + " 至 $" + val(gold?.last) + " — " + (goldPctV < 0 ? "美元走强+地缘缓和压制" : goldPctV > 0 ? "避险需求支撑" : "挺盘"));
+  L.push("- **DXY：**" + (dxy && dxy.pctChange ? pct(dxy.pctChange) : "—") + " 至 " + val(dxy?.last));
+  L.push("- **10Y美债：**" + val(u10?.last) + " " + bp(u10?.change));
+  L.push("- **HK11133(黄金认沽权证)：**" + hkAct + " " + star(hkConf) + " (信心评分" + hkConf + "/5)");
   L.push("---");
   L.push("");
 
