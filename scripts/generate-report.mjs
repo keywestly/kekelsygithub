@@ -1,4 +1,4 @@
-// generate-report.mjs v2 — Daily global market investment briefing
+﻿// generate-report.mjs v2 鈥?Daily global market investment briefing
 // Author: Personal Investment Advisor AI
 import { fetchAll } from "./daily-fetcher.mjs";
 
@@ -39,7 +39,17 @@ function opDir(catV, upThreshold, downThreshold) {
 
 function star(n) { return "\u2605".repeat(n) + "\u2606".repeat(5 - n); }
 
-function gen(d) {
+async function tr(text) {
+  try {
+    var url = "https://translate.googleapis.com/translate_a/single?client=dict-chrome-ex&sl=en&tl=zh-CN&dt=t&q=" + encodeURIComponent(text);
+    var r = await fetch(url, { signal: AbortSignal.timeout(4000) });
+    var j = await r.json();
+    if (j && j[0] && j[0][0] && j[0][0][0]) return j[0][0][0];
+  } catch(e) {}
+  return null;
+}
+
+async function gen(d) {
   const now = new Date();
   const ds = now.toLocaleDateString("zh-CN", {timeZone:"Asia/Shanghai", year:"numeric",month:"long",day:"numeric",weekday:"long"});
   const L = [];
@@ -163,9 +173,12 @@ function gen(d) {
   L.push("### \u56db\u3001\u5b8f\u89c2\u4e8b\u4ef6");
   L.push("");
   if (d.news && d.news.length > 0) {
-    d.news.slice(0, 3).forEach(function(n, i) {
+    for (var i = 0; i < Math.min(3, d.news.length); i++) {
+      var n = d.news[i];
+      var zh = await tr(n.title);
       L.push((i+1) + ". **" + n.title + "** (\u6765\u6e90: " + (n.source || "CNBC") + ")");
-    });
+      if (zh) L.push("   " + zh);
+    }
   } else {
     L.push("1. \u65b0\u95fb\u6570\u636e\u83b7\u53d6\u5931\u8d25");
   }
@@ -296,7 +309,7 @@ async function main() {
     return;
   }
   console.log("[report] Data: " + c + " indices, " + Object.keys(data.sectors).length + " sectors, " + Object.keys(data.stocks).length + " stocks");
-  var report = gen(data);
+  var report = await gen(data);
   console.log("[report] Report: " + report.length + " chars");
   var k = process.env.SCT_KEY;
   if (!k) throw new Error("Missing SCT_KEY");
