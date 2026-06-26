@@ -1,8 +1,8 @@
-name: 美股 Morning Report
+﻿name: 缇庤偂 Morning Report
 
 on:
   schedule:
-    - cron: '0 * * * 1-5'
+    - cron: '0 * * * 1-6'
   workflow_dispatch:
   repository_dispatch:
     types: [morning-report]

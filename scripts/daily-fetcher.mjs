@@ -2,7 +2,7 @@
 const CNBC_QUOTE = 'https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=';
 const MARKETS = { SPY: 'S&P 500', QQQ: 'Nasdaq 100', DIA: 'Dow Jones', IWM: 'Russell 2000' };
 const SECTORS = { XLK: '科技', SMH: '半导体', XLF: '金融', XLV: '医疗', XLE: '能源', XLP: '消费必需品', XLY: '非必需消费' };
-const STOCKS = ['NVDA', 'MSFT', 'AAPL', 'AMZN', 'META', 'TSLA', 'AMD', 'AVGO'];
+const STOCKS = ['NVDA', 'MSFT', 'AAPL', 'AMZN', 'META', 'GOOGL', 'TSLA', 'TSM', 'AMD', 'AVGO', 'MU'];
 const MACRO = ['VIX', 'US10Y', 'US2Y', 'EUR='];
 const FUTURES = { '@CL.1': 'WTI原油', '@GC.1': '黄金', '@DX.1': '美元指数DXY' };
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
