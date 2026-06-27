@@ -1,4 +1,4 @@
-﻿name: 缇庤偂 Morning Report
+name: 美股 Morning Report
 
 on:
   schedule:
@@ -11,18 +11,24 @@ jobs:
   generate-report:
     runs-on: ubuntu-latest
     steps:
-      - name: Check time (08:00 Beijing +/- tolerance)
+      - name: Check time
         id: check_time
+        env:
+          GHA_EVENT: ${{ github.event_name }}
         run: |
           HOUR=$(TZ='Asia/Shanghai' date +%H)
-          echo "Beijing time: $(TZ='Asia/Shanghai' date '+%H:%M')"
-          # GitHub Actions free-tier cron can be delayed 10-40 min
-          # Accept any trigger within 08:xx hour (cron trigger is once/hour)
-          if [ "$HOUR" = "08" ]; then
-            echo "Proceeding at 08:00 Beijing"
+          MIN=$(TZ='Asia/Shanghai' date +%M)
+          echo "Beijing time: $HOUR:$MIN"
+          echo "GitHub event: $GHA_EVENT"
+          # Manual trigger: always proceed
+          if [ "$GHA_EVENT" = "workflow_dispatch" ] || [ "$GHA_EVENT" = "repository_dispatch" ]; then
+            echo "Manual trigger - proceeding"
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          elif [ "$HOUR" = "08" ] || [ "$HOUR" = "09" ]; then
+            echo "Scheduled at $HOUR:xx Beijing - proceeding"
             echo "should_run=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Skipping - HOUR=$HOUR, not 08:00 Beijing"
+            echo "Skipping - HOUR=$HOUR not in 08-09 window"
             echo "should_run=false" >> "$GITHUB_OUTPUT"
           fi
 
