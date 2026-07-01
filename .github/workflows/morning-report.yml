@@ -1,8 +1,10 @@
-name: 美股 Morning Report
+﻿name: 美股 Morning Report
 
+# 每天多次触发 + repository_dispatch 备用，解决 GitHub cron 跳单问题
 on:
   schedule:
-    - cron: '0 * * * 2-6'
+    # 每整点运行一次，工作日 08:00 Beijing 才实际执行
+    - cron: '0 * * * 1-5'
   workflow_dispatch:
   repository_dispatch:
     types: [morning-report]
@@ -11,41 +13,25 @@ jobs:
   generate-report:
     runs-on: ubuntu-latest
     steps:
-      - name: Check time
-        id: check_time
-        env:
-          GHA_EVENT: ${{ github.event_name }}
+      - name: Check time (only 08:00 Beijing)
         run: |
+          TZ='Asia/Shanghai' date +'Current time: %H:%M'
           HOUR=$(TZ='Asia/Shanghai' date +%H)
-          MIN=$(TZ='Asia/Shanghai' date +%M)
-          echo "Beijing time: $HOUR:$MIN"
-          echo "GitHub event: $GHA_EVENT"
-          # Manual trigger: always proceed
-          if [ "$GHA_EVENT" = "workflow_dispatch" ] || [ "$GHA_EVENT" = "repository_dispatch" ]; then
-            echo "Manual trigger - proceeding"
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-          elif [ "$HOUR" = "08" ] || [ "$HOUR" = "09" ]; then
-            echo "Scheduled at $HOUR:xx Beijing - proceeding"
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Skipping - HOUR=$HOUR not in 08-09 window"
-            echo "should_run=false" >> "$GITHUB_OUTPUT"
+          MINUTE=$(TZ='Asia/Shanghai' date +%M)
+          # Allow 08:00-08:05 window
+          if [ "$HOUR" != "08" ] || [ "$MINUTE" -gt 5 ]; then
+            echo "⏭️ Not 08:00 Beijing time, skipping"
+            exit 0
           fi
+          echo "✅ 08:00 Beijing, proceeding"
 
       - uses: actions/checkout@v4
-        if: steps.check_time.outputs.should_run == 'true'
 
       - uses: actions/setup-node@v4
-        if: steps.check_time.outputs.should_run == 'true'
         with:
           node-version: '22'
 
       - name: Run morning report
-        if: steps.check_time.outputs.should_run == 'true'
         run: node scripts/generate-report.mjs
         env:
           SCT_KEY: ${{ secrets.SCT_KEY }}
-
-      - name: Skipped notification
-        if: steps.check_time.outputs.should_run != 'true'
-        run: echo "Skipped - triggered at $(TZ='Asia/Shanghai' date '+%H:%M') Beijing time"
