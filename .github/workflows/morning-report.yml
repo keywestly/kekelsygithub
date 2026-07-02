@@ -1,12 +1,14 @@
 name: US Morning Report
 
 on:
+  push:
+    branches: [main]
   schedule:
     - cron: '0 * * * 1-5'
   workflow_dispatch:
     inputs:
       force_run:
-        description: Skip time check (for testing)
+        description: Skip time check
         required: false
         default: false
         type: boolean
@@ -21,9 +23,11 @@ jobs:
     steps:
       - id: check
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.force_run }}" = "true" ]; then
+          IS_PUSH="${{ github.event_name == 'push' }}"
+          IS_FORCED="${{ github.event.inputs.force_run == 'true' }}"
+          if [ "$IS_PUSH" = "true" ] || [ "$IS_FORCED" = "true" ]; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
-            echo "Forced run via workflow_dispatch"
+            echo "Trigger: push or forced"
           else
             HOUR=$(TZ='Asia/Shanghai' date +%H)
             MINUTE=$(TZ='Asia/Shanghai' date +%M)
@@ -48,5 +52,6 @@ jobs:
         run: node scripts/generate-report.mjs
         env:
           SCT_KEY: ${{ secrets.SCT_KEY }}
+          REPORT_PREFIX: ${{ github.event_name == 'push' && '[TEST]' || '' }}
       - name: Print success
-        run: echo "Report pushed successfully at $(TZ='Asia/Shanghai' date '+%H:%M') Beijing"
+        run: echo "Done at $(TZ='Asia/Shanghai' date '+%H:%M') Beijing"

@@ -324,7 +324,8 @@ async function main() {
   console.log("[report] Report: " + report.length + " chars");
   var k = process.env.SCT_KEY;
   if (!k) throw new Error("Missing SCT_KEY");
-  var title = "\uD83D\uDCCA \u6bcf\u65e5\u5168\u7403\u5e02\u573a\u6295\u8d44\u7b80\u62a5 " + new Date().toLocaleDateString("zh-CN", {timeZone:"Asia/Shanghai", year:"numeric", month:"long", day:"numeric"});
+  var prefix = process.env.REPORT_PREFIX || "";
+var title = prefix + "\uD83D\uDCCA \u6bcf\u65e5\u5168\u7403\u5e02\u573a\u6295\u8d44\u7b80\u62a5 " + new Date().toLocaleDateString("zh-CN", {timeZone:"Asia/Shanghai", year:"numeric", month:"long", day:"numeric"});
   await push(k, title, report);
 }
 
