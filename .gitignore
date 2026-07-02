@@ -1,4 +1,10 @@
-node_modules/
-.env
-outputs/morning_report.md
-*.log
+scripts/generate-and-push.mjs
+outputs/
+scripts/*_history.json
+edit_prefix.*
+fetch_data.mjs
+fetch_news.mjs
+reuters.mjs
+detail.mjs
+desc.mjs
+push*.mjs
