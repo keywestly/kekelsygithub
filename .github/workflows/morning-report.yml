@@ -1,39 +1,52 @@
-﻿name: 美股 Morning Report
+name: US Morning Report
 
 on:
   schedule:
-    # 每小时触发一次，通过步骤条件过滤（解决 GitHub cron 跳单问题）
     - cron: '0 * * * 1-5'
   workflow_dispatch:
+    inputs:
+      force_run:
+        description: Skip time check (for testing)
+        required: false
+        default: false
+        type: boolean
   repository_dispatch:
     types: [morning-report]
 
 jobs:
-  generate-report:
+  check-time:
     runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
     steps:
-      - name: Check time (only 08:00 Beijing)
-        id: check_time
+      - id: check
         run: |
-          HOUR=$(TZ='Asia/Shanghai' date +%H)
-          MINUTE=$(TZ='Asia/Shanghai' date +%M)
-          echo "Beijing time: $HOUR:$MINUTE"
-          if [ "$HOUR" != "08" ] || [ "$MINUTE" -gt 5 ]; then
-            echo "should_run=false" >> "$GITHUB_OUTPUT"
-          else
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.force_run }}" = "true" ]; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "Forced run via workflow_dispatch"
+          else
+            HOUR=$(TZ='Asia/Shanghai' date +%H)
+            MINUTE=$(TZ='Asia/Shanghai' date +%M)
+            echo "Beijing: $HOUR:$MINUTE"
+            if [ "$HOUR" = "08" ] && [ "$MINUTE" -le 5 ]; then
+              echo "should_run=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "should_run=false" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
+  generate-report:
+    needs: check-time
+    if: needs.check-time.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    steps:
       - uses: actions/checkout@v4
-        if: steps.check_time.outputs.should_run == 'true'
-
       - uses: actions/setup-node@v4
-        if: steps.check_time.outputs.should_run == 'true'
         with:
           node-version: '22'
-
       - name: Run morning report
-        if: steps.check_time.outputs.should_run == 'true'
         run: node scripts/generate-report.mjs
         env:
           SCT_KEY: ${{ secrets.SCT_KEY }}
+      - name: Print success
+        run: echo "Report pushed successfully at $(TZ='Asia/Shanghai' date '+%H:%M') Beijing"
