@@ -2,31 +2,21 @@ name: Morning Report
 
 on:
   schedule:
-    - cron: '0 * * * 1-5'
+    - cron: "0 0 * * 1-5"
   workflow_dispatch:
+    inputs:
+      force_run:
+        description: "Skip holiday check"
+        default: "false"
 
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - name: Check time (only 08:00 Beijing)
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "Manual trigger, proceed"
-          else
-            HOUR=$(TZ='Asia/Shanghai' date +%H)
-            echo "Beijing hour: $HOUR"
-            if [ "$HOUR" != "08" ]; then
-              echo "Not 08:00, skip"
-              exit 1
-            fi
-            echo "08:00, proceed"
-          fi
-
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
       - name: Generate and push
         run: node scripts/generate-report.mjs
         env:
