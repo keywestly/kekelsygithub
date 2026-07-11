@@ -3,3 +3,4 @@ outputs/
 scripts/*_history.json
 push*.mjs
 run-report.bat
+.report-sent

@@ -212,6 +212,20 @@ async function main() {
   const wd = n.getDay();
   const force = process.argv.includes("--force");
   if (!force && (wd === 0 || wd === 6)) { console.log("[report] Weekend skip"); return; }
+
+  // Daily-once check: skip if already sent today
+  if (!force) {
+    try {
+      const fs = await import("fs");
+      const markerPath = new URL("./.report-sent", import.meta.url).pathname;
+      const sent = fs.readFileSync(markerPath, "utf8").trim();
+      if (sent === n.toLocaleDateString("zh-CN",{timeZone:"Asia/Shanghai"})) {
+        console.log("[report] Already sent today, skip");
+        return;
+      }
+    } catch(e) { /* marker file missing = first run today, proceed */ }
+  }
+
   console.log("[report] Fetching data...");
   const d = await fa();
   const ic = Object.keys(d.indices).length;
@@ -227,6 +241,14 @@ async function main() {
   const pfx = process.env.REPORT_PREFIX || "";
   const t = pfx+"\uD83D\uDCCA \u7F8E\u80A1\u6668\u62A5 "+n.toLocaleDateString("zh-CN",{timeZone:"Asia/Shanghai",year:"numeric",month:"long",day:"numeric"});
   await push(t, r);
+
+  // Write marker after successful push
+  try {
+    const fs = await import("fs");
+    const markerPath = new URL("./.report-sent", import.meta.url).pathname;
+    fs.writeFileSync(markerPath, n.toLocaleDateString("zh-CN",{timeZone:"Asia/Shanghai"}), "utf8");
+    console.log("[report] Marker written");
+  } catch(e) { /* non-critical */ }
 }
 
 main().catch(e => { console.error("[report] Fatal:", e.message); process.exit(1); });
