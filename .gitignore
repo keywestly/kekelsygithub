@@ -2,3 +2,4 @@ scripts/generate-and-push.mjs
 outputs/
 scripts/*_history.json
 push*.mjs
+run-report.bat
